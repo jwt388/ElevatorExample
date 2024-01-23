@@ -36,21 +36,26 @@ public final class Constants {
     public static final int ENCODER_A_CHANNEL = 0;
     public static final int ENCODER_B_CHANNEL = 1;
 
-    public static final double ELEVATOR_KP = 1;
-    public static final double ELEVATOR_KI = 0;
-    public static final double ELEVATOR_KD = 0;
+    // Constants tunable through preferences
+    public static final String ELEVATOR_KP_KEY = "ElevatorKP"; // The P gain for the PID controller
+    public static final double DEFAULT_ELEVATOR_KP = 15;
+    public static final String ELEVATOR_KS_KEY = "ElevatorKS"; // Static motor gain
+    public static final double DEFAULT_KS_VOLTS = 0.1; // volts (V)
+    public static final String ELEVATOR_KG_KEY = "ElevatorKG"; // Gravity gain
+    public static final double DEFAULT_KG_VOLTS = 0.55; // volts (V)
+    public static final String ELEVATOR_KV_KEY = "ElevatorKV"; // Velocity gain
+    // Ks: volt per velocity (V/(m/s))
+    public static final double DEFAULT_KV_VOLTS_PER_METER_PER_SEC = 12.0;
+    public static final String ELEVATOR_VELOCITY_MAX_KEY = "ElevatorVelocityMax";
+    public static final double DEFAULT_MAX_VELOCITY_METERS_PER_SEC = 0.2;
+    public static final String ELEVATOR_ACCELERATION_MAX_KEY = "ElevatorAccelerationMax";
+    public static final double DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2 = 0.5;
 
-    public static final double ELEVATOR_KS = 0.01; // volts (V)
-    public static final double ELEVATOR_KG = 0.2; // volts (V)
-    public static final double ELEVATOR_KV = 0.6; // volt per velocity (V/(m/s))
-    public static final double ELEVATOR_KA = 0.0; // volt per acceleration (V/(m/s²))
-    public static final double MAX_VELOCITY_METERS_PER_SEC = 0.25;
-    public static final double MAX_ACCELERATION_METERS_PER_SEC2 = 1.0;
     public static final double GEAR_RATIO = 1.0d / 32;
     public static final double ELEVATOR_METERS_PER_ENCODER_ROTATION = 2.0 * Math.PI * GEAR_RATIO;
     public static final double RPM_TO_METERS_PER_SEC = ELEVATOR_METERS_PER_ENCODER_ROTATION / 60;
-    public static final double ELEVATOR_HIGH_POSITION = 0.75;
-    public static final double ELEVATOR_LOW_POSITION = 0.0;
+    public static final double ELEVATOR_HIGH_POSITION = 0.8;
+    public static final double ELEVATOR_LOW_POSITION = 0.2;
     public static final double ELEVATOR_OFFSET_RADS = 0.0;
 
     // Encoder is reset to measure 0 at the bottom, so minimum height is 0.

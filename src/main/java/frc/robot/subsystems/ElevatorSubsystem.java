@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -29,12 +30,21 @@ import frc.robot.Constants.ElevatorConstants;
  * the elevator at the current position, and shift the elevator's position up or down by a fixed
  * increment.
  *
+ * <p>The ElevatorSubsystem class provides a constructor where hardware dependiencies are passed in
+ * to allow access for testing. There is also a method provided to create default hardware when
+ * those details are not needed outside of the subsystem.
+ *
  * <p>Example Usage:
  *
  * <pre>{@code
- * // Create a new instance of ElevatorSubsystem
+ * // Create a new instance of ElevatorSubsystem using specified hardware
  * CANSparkMax motor = new CANSparkMax(1, MotorType.kBrushless);
- * ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(motor);
+ * RelativeEncoder encoder = motor.getEncoder();
+ * elevatorHardware = new ElevatorSubsystem.Hardware(motor, encoder);
+ * ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(elevatorHardware);
+ *
+ * // Create a new instance of ElevatorSubsystem using default hardware
+ * ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(initializeHardware());
  *
  * // Move the elevator to a specific position
  * Command moveToPositionCommand = elevatorSubsystem.moveToPosition(1.0);
@@ -98,18 +108,18 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
   private ProfiledPIDController elevatorController =
       new ProfiledPIDController(
-          Constants.ElevatorConstants.ELEVATOR_KP,
-          Constants.ElevatorConstants.ELEVATOR_KI,
-          Constants.ElevatorConstants.ELEVATOR_KD,
+          Constants.ElevatorConstants.DEFAULT_ELEVATOR_KP,
+          0.0,
+          0.0,
           new TrapezoidProfile.Constraints(
-              ElevatorConstants.MAX_VELOCITY_METERS_PER_SEC,
-              ElevatorConstants.MAX_ACCELERATION_METERS_PER_SEC2));
+              ElevatorConstants.DEFAULT_MAX_VELOCITY_METERS_PER_SEC,
+              ElevatorConstants.DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2));
 
   ElevatorFeedforward feedforward =
       new ElevatorFeedforward(
-          ElevatorConstants.ELEVATOR_KS,
-          ElevatorConstants.ELEVATOR_KG,
-          ElevatorConstants.ELEVATOR_KV,
+          ElevatorConstants.DEFAULT_KS_VOLTS,
+          ElevatorConstants.DEFAULT_KG_VOLTS,
+          ElevatorConstants.DEFAULT_KV_VOLTS_PER_METER_PER_SEC,
           0.0); // Acceleration is not used in this implementation
 
   private double output = 0.0;
@@ -128,6 +138,7 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
   private void initializeElevator() {
 
+    initPreferences();
     initEncoder();
     initMotor();
 
@@ -192,9 +203,8 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
       setpoint = elevatorController.getSetpoint();
 
       // Calculate the feedforward to move the elevator at the desired velocity and offset
-      // the effect of gravity at the desired position. Voltage for acceleration is not
-      // used.
-      newFeedforward = feedforward.calculate(setpoint.position, setpoint.velocity);
+      // the effect of gravity. Voltage for acceleration is not used.
+      newFeedforward = feedforward.calculate(setpoint.velocity);
 
       // Add the feedforward to the PID output to get the motor output
       voltageCommand = output + newFeedforward;
@@ -225,7 +235,7 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
    * driving the motor.
    */
   public Command holdPosition() {
-    return run(this::useOutput).withName("elevator: Hold Position");
+    return run(this::useOutput).withName("Elevator: Hold Position");
   }
 
   /**
@@ -258,6 +268,7 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Don't enable if already enabled since this may cause control transients
     if (!elevatorEnabled) {
+      loadPreferences();
       setDefaultCommand(holdPosition());
 
       // Reset the PID controller to clear any previous state
@@ -311,6 +322,69 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   /** Returns the Motor Commanded Voltage. */
   public double getVoltageCommand() {
     return voltageCommand;
+  }
+
+  /**
+   * Put tunable values in the Preferences table using default values, if the keys don't already
+   * exist.
+   */
+  private void initPreferences() {
+
+    // Preferences for PID controller
+    Preferences.initDouble(
+        ElevatorConstants.ELEVATOR_KP_KEY, ElevatorConstants.DEFAULT_ELEVATOR_KP);
+
+    // Preferences for Trapezoid Profile
+    Preferences.initDouble(
+        ElevatorConstants.ELEVATOR_VELOCITY_MAX_KEY,
+        ElevatorConstants.DEFAULT_MAX_VELOCITY_METERS_PER_SEC);
+    Preferences.initDouble(
+        ElevatorConstants.ELEVATOR_ACCELERATION_MAX_KEY,
+        ElevatorConstants.DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2);
+
+    // Preferences for Feedforward
+    Preferences.initDouble(ElevatorConstants.ELEVATOR_KS_KEY, ElevatorConstants.DEFAULT_KS_VOLTS);
+    Preferences.initDouble(ElevatorConstants.ELEVATOR_KG_KEY, ElevatorConstants.DEFAULT_KG_VOLTS);
+    Preferences.initDouble(
+        ElevatorConstants.ELEVATOR_KV_KEY, ElevatorConstants.DEFAULT_KV_VOLTS_PER_METER_PER_SEC);
+  }
+
+  /**
+   * Load Preferences for values that can be tuned at runtime. This should only be called when the
+   * controller is disabled - for example from enable().
+   */
+  private void loadPreferences() {
+
+    // Read Preferences for PID controller
+    elevatorController.setP(
+        Preferences.getDouble(
+            ElevatorConstants.ELEVATOR_KP_KEY, ElevatorConstants.DEFAULT_ELEVATOR_KP));
+
+    // Read Preferences for Trapezoid Profile and update
+    double velocityMax =
+        Preferences.getDouble(
+            ElevatorConstants.ELEVATOR_VELOCITY_MAX_KEY,
+            ElevatorConstants.DEFAULT_MAX_VELOCITY_METERS_PER_SEC);
+    double accelerationMax =
+        Preferences.getDouble(
+            ElevatorConstants.ELEVATOR_ACCELERATION_MAX_KEY,
+            ElevatorConstants.DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2);
+    elevatorController.setConstraints(
+        new TrapezoidProfile.Constraints(velocityMax, accelerationMax));
+
+    // Read Preferences for Feedforward and create a new instance
+    double staticGain =
+        Preferences.getDouble(
+            ElevatorConstants.ELEVATOR_KS_KEY, ElevatorConstants.DEFAULT_KS_VOLTS);
+    double gravityGain =
+        Preferences.getDouble(
+            ElevatorConstants.ELEVATOR_KG_KEY, ElevatorConstants.DEFAULT_KG_VOLTS);
+    double velocityGain =
+        Preferences.getDouble(
+            ElevatorConstants.ELEVATOR_KV_KEY,
+            ElevatorConstants.DEFAULT_KV_VOLTS_PER_METER_PER_SEC);
+
+    feedforward = new ElevatorFeedforward(staticGain, gravityGain, velocityGain, 0);
   }
 
   /** Close any objects that support it. */

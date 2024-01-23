@@ -25,8 +25,8 @@ public class ElevatorModel implements AutoCloseable {
   private double simCurrent = 0.0;
   private CANSparkMaxSim sparkSim;
 
-  // The arm gearbox represents a gearbox containing two Vex 775pro motors.
-  private final DCMotor elevatorGearbox = DCMotor.getVex775Pro(2);
+  // The arm gearbox represents a gearbox containing one motor.
+  private final DCMotor elevatorGearbox = DCMotor.getMiniCIM(1);
 
   // Simulation classes help us simulate what's going on, including gravity.
   // This elevator sim represents an elevator that can travel up and down when driven by the motor

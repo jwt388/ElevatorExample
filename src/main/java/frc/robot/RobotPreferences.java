@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.Preferences;
 import java.util.Set;
 
 /** Utility class for managing preferences. */
@@ -20,7 +21,32 @@ public class RobotPreferences {
   }
 
   /** Reset the Preferences table to default values. */
-  public static void resetPreferences() {}
+  public static void resetPreferences() {
+
+    // Reset the elevator subsystem preferences
+
+    // Preferences for PID controller
+    Preferences.setDouble(
+        Constants.ElevatorConstants.ELEVATOR_KP_KEY,
+        Constants.ElevatorConstants.DEFAULT_ELEVATOR_KP);
+
+    // Preferences for Trapezoid Profile
+    Preferences.setDouble(
+        Constants.ElevatorConstants.ELEVATOR_VELOCITY_MAX_KEY,
+        Constants.ElevatorConstants.DEFAULT_MAX_VELOCITY_METERS_PER_SEC);
+    Preferences.setDouble(
+        Constants.ElevatorConstants.ELEVATOR_ACCELERATION_MAX_KEY,
+        Constants.ElevatorConstants.DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2);
+
+    // Preferences for Feedforward
+    Preferences.setDouble(
+        Constants.ElevatorConstants.ELEVATOR_KS_KEY, Constants.ElevatorConstants.DEFAULT_KS_VOLTS);
+    Preferences.setDouble(
+        Constants.ElevatorConstants.ELEVATOR_KG_KEY, Constants.ElevatorConstants.DEFAULT_KG_VOLTS);
+    Preferences.setDouble(
+        Constants.ElevatorConstants.ELEVATOR_KV_KEY,
+        Constants.ElevatorConstants.DEFAULT_KV_VOLTS_PER_METER_PER_SEC);
+  }
 
   /** Log the values of all entries in the Preferences table. */
   public static void logPreferences() {
