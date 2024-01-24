@@ -138,7 +138,7 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
   private void initializeElevator() {
 
-    RobotPreferences.initPreferencesArray(ElevatorConstants.ELEVATOR_PREFERENCES);
+    RobotPreferences.initPreferencesArray(ElevatorConstants.getArmPreferences());
 
     initEncoder();
     initMotor();

@@ -50,7 +50,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Move the elevator to the low position when the 'A' button is pressed.
     driverController
-        .a()
+        .povLeft()
         .onTrue(
             robotElevator
                 .moveToPosition(Constants.ElevatorConstants.ELEVATOR_LOW_POSITION)
@@ -58,7 +58,7 @@ public class RobotContainer {
 
     // Move the elevator to the high position when the 'B' button is pressed.
     driverController
-        .b()
+        .povRight()
         .onTrue(
             robotElevator
                 .moveToPosition(Constants.ElevatorConstants.ELEVATOR_HIGH_POSITION)

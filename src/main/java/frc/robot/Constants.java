@@ -49,7 +49,7 @@ public final class Constants {
     public static final PreferenceKeyValue ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2 =
         new PreferenceKeyValue("ElevatorAccelerationMax", 0.5);
 
-    public static final PreferenceKeyValue[] ELEVATOR_PREFERENCES = {
+    private static final PreferenceKeyValue[] ELEVATOR_PREFERENCES = {
       ELEVATOR_KP,
       ELEVATOR_KS,
       ELEVATOR_KG,
@@ -57,6 +57,10 @@ public final class Constants {
       ELEVATOR_MAX_VELOCITY_METERS_PER_SEC,
       ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2
     };
+
+    public static PreferenceKeyValue[] getArmPreferences() {
+      return ELEVATOR_PREFERENCES;
+    }
 
     public static final double GEAR_RATIO = 1.0d / 32;
     public static final double ELEVATOR_METERS_PER_ENCODER_ROTATION = 2.0 * Math.PI * GEAR_RATIO;
