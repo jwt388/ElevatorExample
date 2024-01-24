@@ -14,7 +14,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -22,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.RobotPreferences;
 
 /**
  * The {@code ElevatorSubsystem} class is a subsystem that controls the movement of an elevator
@@ -108,18 +108,18 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
   private ProfiledPIDController elevatorController =
       new ProfiledPIDController(
-          Constants.ElevatorConstants.DEFAULT_ELEVATOR_KP,
+          ElevatorConstants.ELEVATOR_KP.getValue(),
           0.0,
           0.0,
           new TrapezoidProfile.Constraints(
-              ElevatorConstants.DEFAULT_MAX_VELOCITY_METERS_PER_SEC,
-              ElevatorConstants.DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2));
+              ElevatorConstants.ELEVATOR_MAX_VELOCITY_METERS_PER_SEC.getValue(),
+              ElevatorConstants.ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2.getValue()));
 
   ElevatorFeedforward feedforward =
       new ElevatorFeedforward(
-          ElevatorConstants.DEFAULT_KS_VOLTS,
-          ElevatorConstants.DEFAULT_KG_VOLTS,
-          ElevatorConstants.DEFAULT_KV_VOLTS_PER_METER_PER_SEC,
+          ElevatorConstants.ELEVATOR_KS.getValue(),
+          ElevatorConstants.ELEVATOR_KG.getValue(),
+          ElevatorConstants.ELEVATOR_KV_VOLTS_PER_METER_PER_SEC.getValue(),
           0.0); // Acceleration is not used in this implementation
 
   private double output = 0.0;
@@ -138,7 +138,8 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
   private void initializeElevator() {
 
-    initPreferences();
+    RobotPreferences.initPreferencesArray(ElevatorConstants.ELEVATOR_PREFERENCES);
+
     initEncoder();
     initMotor();
 
@@ -325,65 +326,24 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Put tunable values in the Preferences table using default values, if the keys don't already
-   * exist.
-   */
-  private void initPreferences() {
-
-    // Preferences for PID controller
-    Preferences.initDouble(
-        ElevatorConstants.ELEVATOR_KP_KEY, ElevatorConstants.DEFAULT_ELEVATOR_KP);
-
-    // Preferences for Trapezoid Profile
-    Preferences.initDouble(
-        ElevatorConstants.ELEVATOR_VELOCITY_MAX_KEY,
-        ElevatorConstants.DEFAULT_MAX_VELOCITY_METERS_PER_SEC);
-    Preferences.initDouble(
-        ElevatorConstants.ELEVATOR_ACCELERATION_MAX_KEY,
-        ElevatorConstants.DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2);
-
-    // Preferences for Feedforward
-    Preferences.initDouble(ElevatorConstants.ELEVATOR_KS_KEY, ElevatorConstants.DEFAULT_KS_VOLTS);
-    Preferences.initDouble(ElevatorConstants.ELEVATOR_KG_KEY, ElevatorConstants.DEFAULT_KG_VOLTS);
-    Preferences.initDouble(
-        ElevatorConstants.ELEVATOR_KV_KEY, ElevatorConstants.DEFAULT_KV_VOLTS_PER_METER_PER_SEC);
-  }
-
-  /**
    * Load Preferences for values that can be tuned at runtime. This should only be called when the
    * controller is disabled - for example from enable().
    */
   private void loadPreferences() {
 
     // Read Preferences for PID controller
-    elevatorController.setP(
-        Preferences.getDouble(
-            ElevatorConstants.ELEVATOR_KP_KEY, ElevatorConstants.DEFAULT_ELEVATOR_KP));
+    elevatorController.setP(ElevatorConstants.ELEVATOR_KP.getValue());
 
     // Read Preferences for Trapezoid Profile and update
-    double velocityMax =
-        Preferences.getDouble(
-            ElevatorConstants.ELEVATOR_VELOCITY_MAX_KEY,
-            ElevatorConstants.DEFAULT_MAX_VELOCITY_METERS_PER_SEC);
-    double accelerationMax =
-        Preferences.getDouble(
-            ElevatorConstants.ELEVATOR_ACCELERATION_MAX_KEY,
-            ElevatorConstants.DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2);
+    double velocityMax = ElevatorConstants.ELEVATOR_MAX_VELOCITY_METERS_PER_SEC.getValue();
+    double accelerationMax = ElevatorConstants.ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2.getValue();
     elevatorController.setConstraints(
         new TrapezoidProfile.Constraints(velocityMax, accelerationMax));
 
     // Read Preferences for Feedforward and create a new instance
-    double staticGain =
-        Preferences.getDouble(
-            ElevatorConstants.ELEVATOR_KS_KEY, ElevatorConstants.DEFAULT_KS_VOLTS);
-    double gravityGain =
-        Preferences.getDouble(
-            ElevatorConstants.ELEVATOR_KG_KEY, ElevatorConstants.DEFAULT_KG_VOLTS);
-    double velocityGain =
-        Preferences.getDouble(
-            ElevatorConstants.ELEVATOR_KV_KEY,
-            ElevatorConstants.DEFAULT_KV_VOLTS_PER_METER_PER_SEC);
-
+    double staticGain = ElevatorConstants.ELEVATOR_KS.getValue();
+    double gravityGain = ElevatorConstants.ELEVATOR_KG.getValue();
+    double velocityGain = ElevatorConstants.ELEVATOR_KV_VOLTS_PER_METER_PER_SEC.getValue();
     feedforward = new ElevatorFeedforward(staticGain, gravityGain, velocityGain, 0);
   }
 

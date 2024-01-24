@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import frc.robot.RobotPreferences.PreferenceKeyValue;
+
 public final class Constants {
 
   private Constants() {
@@ -37,19 +39,24 @@ public final class Constants {
     public static final int ENCODER_B_CHANNEL = 1;
 
     // Constants tunable through preferences
-    public static final String ELEVATOR_KP_KEY = "ElevatorKP"; // The P gain for the PID controller
-    public static final double DEFAULT_ELEVATOR_KP = 15;
-    public static final String ELEVATOR_KS_KEY = "ElevatorKS"; // Static motor gain
-    public static final double DEFAULT_KS_VOLTS = 0.1; // volts (V)
-    public static final String ELEVATOR_KG_KEY = "ElevatorKG"; // Gravity gain
-    public static final double DEFAULT_KG_VOLTS = 0.55; // volts (V)
-    public static final String ELEVATOR_KV_KEY = "ElevatorKV"; // Velocity gain
-    // Ks: volt per velocity (V/(m/s))
-    public static final double DEFAULT_KV_VOLTS_PER_METER_PER_SEC = 12.0;
-    public static final String ELEVATOR_VELOCITY_MAX_KEY = "ElevatorVelocityMax";
-    public static final double DEFAULT_MAX_VELOCITY_METERS_PER_SEC = 0.2;
-    public static final String ELEVATOR_ACCELERATION_MAX_KEY = "ElevatorAccelerationMax";
-    public static final double DEFAULT_MAX_ACCELERATION_METERS_PER_SEC2 = 0.5;
+    public static final PreferenceKeyValue ELEVATOR_KP = new PreferenceKeyValue("ElevatorKP", 15.0);
+    public static final PreferenceKeyValue ELEVATOR_KS = new PreferenceKeyValue("ElevatorKS", 0.1);
+    public static final PreferenceKeyValue ELEVATOR_KG = new PreferenceKeyValue("ElevatorKG", 0.55);
+    public static final PreferenceKeyValue ELEVATOR_KV_VOLTS_PER_METER_PER_SEC =
+        new PreferenceKeyValue("ElevatorKV", 12.0);
+    public static final PreferenceKeyValue ELEVATOR_MAX_VELOCITY_METERS_PER_SEC =
+        new PreferenceKeyValue("ElevatorVelocityMax", 0.2);
+    public static final PreferenceKeyValue ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2 =
+        new PreferenceKeyValue("ElevatorAccelerationMax", 0.5);
+
+    public static final PreferenceKeyValue[] ELEVATOR_PREFERENCES = {
+      ELEVATOR_KP,
+      ELEVATOR_KS,
+      ELEVATOR_KG,
+      ELEVATOR_KV_VOLTS_PER_METER_PER_SEC,
+      ELEVATOR_MAX_VELOCITY_METERS_PER_SEC,
+      ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2
+    };
 
     public static final double GEAR_RATIO = 1.0d / 32;
     public static final double ELEVATOR_METERS_PER_ENCODER_ROTATION = 2.0 * Math.PI * GEAR_RATIO;
