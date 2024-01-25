@@ -58,7 +58,7 @@ public final class Constants {
       ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2
     };
 
-    public static PreferenceKeyValue[] getArmPreferences() {
+    public static PreferenceKeyValue[] getElevatorPreferences() {
       return ELEVATOR_PREFERENCES;
     }
 

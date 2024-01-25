@@ -46,8 +46,8 @@ public class RobotPreferences {
   /** Reset the Preferences table to default values. */
   public static void resetPreferences() {
 
-    // Reset the arm subsystem preferences
-    resetPreferencesArray(Constants.ElevatorConstants.getArmPreferences());
+    // Reset the elevator subsystem preferences
+    resetPreferencesArray(Constants.ElevatorConstants.getElevatorPreferences());
   }
 
   /** Reset an array of Preferences to default values. */
