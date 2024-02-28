@@ -16,8 +16,8 @@ public final class Constants {
       throw new IllegalStateException("ElevatorSimConstants Utility Class");
     }
 
-    public static final double ELEVATOR_REDUCTION = 1 / ElevatorConstants.GEAR_RATIO;
-    public static final double ELEVATOR_DRUM_RADIUS = Units.inchesToMeters(2.0);
-    public static final double CARRIAGE_MASS = 4.0; // kg
+    public static final double ELEVATOR_REDUCTION = ElevatorConstants.GEAR_RATIO;
+    public static final double ELEVATOR_DRUM_RADIUS = Units.inchesToMeters(0.5);
+    public static final double CARRIAGE_MASS = 28.4; // kg
   }
 }

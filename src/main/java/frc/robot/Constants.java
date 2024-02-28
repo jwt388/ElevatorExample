@@ -41,13 +41,13 @@ public final class Constants {
     // Constants tunable through preferences
     public static final PreferenceKeyValue ELEVATOR_KP = new PreferenceKeyValue("ElevatorKP", 15.0);
     public static final PreferenceKeyValue ELEVATOR_KS = new PreferenceKeyValue("ElevatorKS", 0.1);
-    public static final PreferenceKeyValue ELEVATOR_KG = new PreferenceKeyValue("ElevatorKG", 0.55);
+    public static final PreferenceKeyValue ELEVATOR_KG = new PreferenceKeyValue("ElevatorKG", 0.65);
     public static final PreferenceKeyValue ELEVATOR_KV_VOLTS_PER_METER_PER_SEC =
-        new PreferenceKeyValue("ElevatorKV", 12.0);
+        new PreferenceKeyValue("ElevatorKV", 24.55);
     public static final PreferenceKeyValue ELEVATOR_MAX_VELOCITY_METERS_PER_SEC =
-        new PreferenceKeyValue("ElevatorVelocityMax", 0.2);
+        new PreferenceKeyValue("ElevatorVelocityMax", 0.5);
     public static final PreferenceKeyValue ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2 =
-        new PreferenceKeyValue("ElevatorAccelerationMax", 0.5);
+        new PreferenceKeyValue("ElevatorAccelerationMax", 2.0);
 
     private static final PreferenceKeyValue[] ELEVATOR_PREFERENCES = {
       ELEVATOR_KP,
@@ -62,8 +62,8 @@ public final class Constants {
       return ELEVATOR_PREFERENCES;
     }
 
-    public static final double GEAR_RATIO = 1.0d / 32;
-    public static final double ELEVATOR_METERS_PER_ENCODER_ROTATION = 2.0 * Math.PI * GEAR_RATIO;
+    public static final double GEAR_RATIO = 32.0;
+    public static final double ELEVATOR_METERS_PER_ENCODER_ROTATION = 2.0 * Math.PI / GEAR_RATIO;
     public static final double RPM_TO_METERS_PER_SEC = ELEVATOR_METERS_PER_ENCODER_ROTATION / 60;
     public static final double ELEVATOR_HIGH_POSITION = 0.8;
     public static final double ELEVATOR_LOW_POSITION = 0.2;
