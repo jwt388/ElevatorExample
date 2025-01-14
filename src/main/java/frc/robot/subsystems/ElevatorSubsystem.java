@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
-import frc.robot.RobotPreferences;
+import frc.robot.util.TunableNumber;
 
 /**
  * The {@code ElevatorSubsystem} class is a subsystem that controls the movement of an elevator
@@ -67,7 +67,8 @@ import frc.robot.RobotPreferences;
  * - Methods:
  *   - {@code periodic()}: Updates the SmartDashboard with information about the elevator's state.
  *   - {@code useOutput()}: Generates the motor command using the PID controller and feedforward.
- *   - {@code moveToPosition(double goal)}: Returns a Command that moves the elevator to a new position.
+ *   - {@code moveToPosition(double goal)}: Returns a Command that moves the elevator to a new
+ *     position.
  *   - {@code holdPosition()}: Returns a Command that holds the elevator at the last goal position.
  *   - {@code setGoalPosition(double goal)}: Sets the goal state for the subsystem.
  *   - {@code atGoalPosition()}: Returns whether the elevator has reached the goal position.
@@ -75,8 +76,7 @@ import frc.robot.RobotPreferences;
  *   - {@code disable()}: Disables the PID control of the elevator.
  *   - {@code getMeasurement()}: Returns the elevator position for PID control and logging.
  *   - {@code getVoltageCommand()}: Returns the motor commanded voltage.
- *   - {@code initPreferences()}: Initializes the preferences for tuning the controller.
- *   - {@code loadPreferences()}: Loads the preferences for tuning the controller.
+ *   - {@code loadTunableNumbers()}: Loads the preferences for tuning the controller.
  *   - {@code close()}: Closes any objects that support it.
  *   - Fields:
  *   - {@code private final SparkMax motor}: The motor used to control the elevator.
@@ -112,18 +112,18 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
   private ProfiledPIDController elevatorController =
       new ProfiledPIDController(
-          ElevatorConstants.ELEVATOR_KP.getValue(),
+          ElevatorConstants.ELEVATOR_KP,
           0.0,
           0.0,
           new TrapezoidProfile.Constraints(
-              ElevatorConstants.ELEVATOR_MAX_VELOCITY_METERS_PER_SEC.getValue(),
-              ElevatorConstants.ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2.getValue()));
+              ElevatorConstants.ELEVATOR_MAX_VELOCITY_METERS_PER_SEC,
+              ElevatorConstants.ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2));
 
   ElevatorFeedforward feedforward =
       new ElevatorFeedforward(
-          ElevatorConstants.ELEVATOR_KS.getValue(),
-          ElevatorConstants.ELEVATOR_KG.getValue(),
-          ElevatorConstants.ELEVATOR_KV_VOLTS_PER_METER_PER_SEC.getValue(),
+          ElevatorConstants.ELEVATOR_KS,
+          ElevatorConstants.ELEVATOR_KG,
+          ElevatorConstants.ELEVATOR_KV_VOLTS_PER_METER_PER_SEC,
           0.0); // Acceleration is not used in this implementation
 
   private double output = 0.0;
@@ -131,6 +131,19 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   private double newFeedforward = 0;
   private boolean elevatorEnabled;
   private double voltageCommand = 0.0;
+
+  // Setup tunable numbers for the elevator.
+  private TunableNumber kp = new TunableNumber("ElevatorKP", ElevatorConstants.ELEVATOR_KP);
+  private TunableNumber ks = new TunableNumber("ElevatorKS", ElevatorConstants.ELEVATOR_KS);
+  private TunableNumber kg = new TunableNumber("ElevatorKG", ElevatorConstants.ELEVATOR_KG);
+  private TunableNumber kv =
+      new TunableNumber("ElevatorKV", ElevatorConstants.ELEVATOR_KV_VOLTS_PER_METER_PER_SEC);
+  private TunableNumber maxVelocity =
+      new TunableNumber(
+          "ElevatorMaxVelocity", ElevatorConstants.ELEVATOR_MAX_VELOCITY_METERS_PER_SEC);
+  private TunableNumber maxAcceleration =
+      new TunableNumber(
+          "ElevatorMaxAcceleration", ElevatorConstants.ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2);
 
   /** Create a new ElevatorSubsystem controlled by a Profiled PID COntroller . */
   public ElevatorSubsystem(Hardware elevatorHardware) {
@@ -141,8 +154,6 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   private void initializeElevator() {
-
-    RobotPreferences.initPreferencesArray(ElevatorConstants.getElevatorPreferences());
 
     initMotor();
 
@@ -276,7 +287,7 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Don't enable if already enabled since this may cause control transients
     if (!elevatorEnabled) {
-      loadPreferences();
+      loadTunableNumbers();
       setDefaultCommand(holdPosition());
 
       // Reset the PID controller to clear any previous state
@@ -359,22 +370,17 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
    * Load Preferences for values that can be tuned at runtime. This should only be called when the
    * controller is disabled - for example from enable().
    */
-  private void loadPreferences() {
+  private void loadTunableNumbers() {
 
     // Read Preferences for PID controller
-    elevatorController.setP(ElevatorConstants.ELEVATOR_KP.getValue());
+    elevatorController.setP(kp.get());
 
     // Read Preferences for Trapezoid Profile and update
-    double velocityMax = ElevatorConstants.ELEVATOR_MAX_VELOCITY_METERS_PER_SEC.getValue();
-    double accelerationMax = ElevatorConstants.ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2.getValue();
     elevatorController.setConstraints(
-        new TrapezoidProfile.Constraints(velocityMax, accelerationMax));
+        new TrapezoidProfile.Constraints(maxVelocity.get(), maxAcceleration.get()));
 
     // Read Preferences for Feedforward and create a new instance
-    double staticGain = ElevatorConstants.ELEVATOR_KS.getValue();
-    double gravityGain = ElevatorConstants.ELEVATOR_KG.getValue();
-    double velocityGain = ElevatorConstants.ELEVATOR_KV_VOLTS_PER_METER_PER_SEC.getValue();
-    feedforward = new ElevatorFeedforward(staticGain, gravityGain, velocityGain, 0);
+    feedforward = new ElevatorFeedforward(ks.get(), kg.get(), kv.get(), 0);
   }
 
   /** Close any objects that support it. */

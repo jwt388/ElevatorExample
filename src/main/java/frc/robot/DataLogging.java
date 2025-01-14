@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.shuffleboard.EventImportance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.ElevatorSubsystem;
 import java.util.Map;
@@ -32,9 +31,6 @@ public class DataLogging {
   private ShuffleboardLayout pdpWidget;
   private boolean everBrownout = false;
   private boolean prevDsConnectState;
-  private ShuffleboardTab sbDriverTab;
-  private Field2d sbField;
-  private ElevatorSubsystem elevator;
 
   private DataLogging() {
     // Starts recording to data log
@@ -43,7 +39,6 @@ public class DataLogging {
 
     // Record the starting values of preferences
     DataLogManager.log("Starting Preference Values:");
-    RobotPreferences.logPreferences();
 
     // Record both DS control and joystick data. To
     DriverStation.startDataLog(DataLogManager.getLog(), Constants.LOG_JOYSTICK_DATA);
@@ -78,9 +73,6 @@ public class DataLogging {
         .withProperties(Map.of("Color when true", "Red", "Color when false", "Green"));
 
     prevDsConnectState = DriverStation.isDSAttached();
-
-    /* Drivers tab */
-    sbDriverTab = Shuffleboard.getTab("Driver");
 
     DataLogManager.log(String.format("Brownout Voltage: %f", RobotController.getBrownoutVoltage()));
 
@@ -155,9 +147,8 @@ public class DataLogging {
    */
   public void dataLogRobotContainerInit(RobotContainer robotContainer) {
 
-    PowerDistribution pdp;
-    pdp = robotContainer.getPdp();
-    elevator = robotContainer.getElevatorSubsystem();
+    PowerDistribution pdp = robotContainer.getPdp();
+    ElevatorSubsystem elevator = robotContainer.getElevatorSubsystem();
 
     // Add widgets to the Commands tab
     sbCommandsTab.add(CommandScheduler.getInstance()).withSize(3, 2);

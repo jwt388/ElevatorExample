@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import frc.robot.RobotPreferences.PreferenceKeyValue;
-
 public final class Constants {
 
   private Constants() {
@@ -23,6 +21,9 @@ public final class Constants {
 
   public static final boolean LOOP_TIMING_LOG = false;
 
+  // Set to true to enable using Tunable Numbers
+  public static final boolean TUNING_MODE = true;
+
   // Set to true to log each frame of command execution. To false to disable.
   public static final boolean COMMAND_EXECUTE_LOG = false;
 
@@ -38,28 +39,12 @@ public final class Constants {
     public static final int CURRENT_LIMIT = 40;
 
     // Constants tunable through preferences
-    public static final PreferenceKeyValue ELEVATOR_KP = new PreferenceKeyValue("ElevatorKP", 15.0);
-    public static final PreferenceKeyValue ELEVATOR_KS = new PreferenceKeyValue("ElevatorKS", 0.1);
-    public static final PreferenceKeyValue ELEVATOR_KG = new PreferenceKeyValue("ElevatorKG", 0.65);
-    public static final PreferenceKeyValue ELEVATOR_KV_VOLTS_PER_METER_PER_SEC =
-        new PreferenceKeyValue("ElevatorKV", 24.55);
-    public static final PreferenceKeyValue ELEVATOR_MAX_VELOCITY_METERS_PER_SEC =
-        new PreferenceKeyValue("ElevatorVelocityMax", 0.5);
-    public static final PreferenceKeyValue ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2 =
-        new PreferenceKeyValue("ElevatorAccelerationMax", 2.0);
-
-    private static final PreferenceKeyValue[] ELEVATOR_PREFERENCES = {
-      ELEVATOR_KP,
-      ELEVATOR_KS,
-      ELEVATOR_KG,
-      ELEVATOR_KV_VOLTS_PER_METER_PER_SEC,
-      ELEVATOR_MAX_VELOCITY_METERS_PER_SEC,
-      ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2
-    };
-
-    public static PreferenceKeyValue[] getElevatorPreferences() {
-      return ELEVATOR_PREFERENCES;
-    }
+    public static final double ELEVATOR_KP = 15.0;
+    public static final double ELEVATOR_KS = 0.1;
+    public static final double ELEVATOR_KG = 0.65;
+    public static final double ELEVATOR_KV_VOLTS_PER_METER_PER_SEC = 24.55;
+    public static final double ELEVATOR_MAX_VELOCITY_METERS_PER_SEC = 0.5;
+    public static final double ELEVATOR_MAX_ACCELERATION_METERS_PER_SEC2 = 2.0;
 
     public static final double GEAR_RATIO = 32.0;
     public static final double ELEVATOR_METERS_PER_ENCODER_ROTATION = 2.0 * Math.PI / GEAR_RATIO;

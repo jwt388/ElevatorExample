@@ -45,9 +45,6 @@ class ElevatorSubsystemTest {
     mockMotor = mock(SparkMax.class);
     mockEncoder = mock(RelativeEncoder.class);
 
-    // Reset preferences to default values so test results are consistent
-    RobotPreferences.resetPreferences();
-
     // Create subsystem object using mock hardware
     elevatorHardware = new ElevatorSubsystem.Hardware(mockMotor, mockEncoder);
     elevator = new ElevatorSubsystem(elevatorHardware);
