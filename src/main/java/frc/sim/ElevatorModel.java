@@ -4,11 +4,9 @@
 
 package frc.sim;
 
-import edu.wpi.first.math.VecBuilder;
+import com.revrobotics.sim.SparkMaxSim;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -22,7 +20,7 @@ public class ElevatorModel implements AutoCloseable {
 
   private final ElevatorSubsystem elevatorSubsystem;
   private double simCurrent = 0.0;
-  private CANSparkMaxSim sparkSim;
+  private SparkMaxSim sparkSim;
 
   // The arm gearbox represents a gearbox containing one motor.
   private final DCMotor elevatorGearbox = DCMotor.getNEO(1);
@@ -39,7 +37,8 @@ public class ElevatorModel implements AutoCloseable {
           ElevatorConstants.ELEVATOR_MAX_HEIGHT_METERS,
           true,
           0,
-          VecBuilder.fill(0.002));
+          0.002,
+          0);
 
   // Create a Mechanism2d visualization of the elevator
   private final Mechanism2d mech2d = new Mechanism2d(1, 1.5);
@@ -61,31 +60,25 @@ public class ElevatorModel implements AutoCloseable {
   /** Initialize the arm simulation. */
   public void simulationInit() {
 
-    // Setup a simulation of the CANSparkMax and methods to set values
-    sparkSim = new CANSparkMaxSim(ElevatorConstants.MOTOR_PORT);
+    // Setup a simulation of the SparkMax and methods to set values
+    sparkSim = new SparkMaxSim(elevatorSubsystem.getMotor(), elevatorGearbox);
   }
 
   /** Update the simulation model. */
   public void updateSim() {
     // In this method, we update our simulation of what our arm is doing
-    // First, we set our "inputs" (voltages)
+    // First, we set our "input" (voltage)
     elevatorSim.setInput(elevatorSubsystem.getVoltageCommand());
 
     // Next, we update it. The standard loop time is 20ms.
     elevatorSim.update(0.020);
 
-    // Finally, we set our simulated encoder's readings and simulated battery voltage and
-    // save the current so it can be retrieved later.
-    sparkSim.setPosition(elevatorSim.getPositionMeters());
-    sparkSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
+    // Finally, we  run the spark simulations, set our simulated encoder's readings and save the
+    // current so it can be retrieved later.
+    sparkSim.iterate(elevatorSim.getVelocityMetersPerSecond(), 12.0, 0.02);
     simCurrent = elevatorSim.getCurrentDrawAmps();
-    sparkSim.setCurrent(simCurrent);
     SmartDashboard.putNumber(
         "Elev Sim Torque (in-lbs)", elevatorGearbox.getTorque(simCurrent) * 8.85); // sim
-
-    // SimBattery estimates loaded battery voltages
-    RoboRioSim.setVInVoltage(
-        BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
 
     // Update elevator visualization with position
     elevatorMech2d.setLength(elevatorSim.getPositionMeters());

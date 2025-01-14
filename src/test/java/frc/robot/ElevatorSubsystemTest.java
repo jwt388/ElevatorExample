@@ -12,8 +12,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
@@ -36,13 +36,13 @@ class ElevatorSubsystemTest {
 
   private ElevatorSubsystem.Hardware elevatorHardware;
   private ElevatorSubsystem elevator;
-  private CANSparkMax mockMotor;
+  private SparkMax mockMotor;
   private RelativeEncoder mockEncoder;
 
   @BeforeEach
   public void initEach() {
     // Create mock hardware devices
-    mockMotor = mock(CANSparkMax.class);
+    mockMotor = mock(SparkMax.class);
     mockEncoder = mock(RelativeEncoder.class);
 
     // Reset preferences to default values so test results are consistent
@@ -107,7 +107,7 @@ class ElevatorSubsystemTest {
     // Set values for mocked sensors
     final double fakeCurrent = -3.3;
     when(mockMotor.getOutputCurrent()).thenReturn(fakeCurrent);
-    final double fakePosition = 1.5;
+    final double fakePosition = 0.1;
     when(mockEncoder.getPosition()).thenReturn(fakePosition);
     final double fakeVelocity = 0.123;
     when(mockEncoder.getVelocity()).thenReturn(fakeVelocity);
@@ -117,7 +117,9 @@ class ElevatorSubsystemTest {
     Command moveCommand =
         elevator.moveToPosition(Constants.ElevatorConstants.ELEVATOR_LOW_POSITION);
     moveCommand.initialize();
+    System.out.println(elevator.getVoltageCommand());
     moveCommand.execute();
+    System.out.println(elevator.getVoltageCommand());
     verify(mockMotor, times(2)).setVoltage(anyDouble());
     verify(mockMotor).setVoltage(0.0);
     verify(mockMotor, times(1)).setVoltage(AdditionalMatchers.gt(0.0));

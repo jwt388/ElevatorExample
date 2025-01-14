@@ -4,10 +4,13 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -25,7 +28,7 @@ import frc.robot.RobotPreferences;
 
 /**
  * The {@code ElevatorSubsystem} class is a subsystem that controls the movement of an elevator
- * using a Profiled PID Controller. It uses a CANSparkMax motor and a RelativeEncoder to measure the
+ * using a Profiled PID Controller. It uses a SparkMax motor and a RelativeEncoder to measure the
  * elevator's position. The class provides methods to move the elevator to a specific position, hold
  * the elevator at the current position, and shift the elevator's position up or down by a fixed
  * increment.
@@ -38,7 +41,7 @@ import frc.robot.RobotPreferences;
  *
  * <pre>{@code
  * // Create a new instance of ElevatorSubsystem using specified hardware
- * CANSparkMax motor = new CANSparkMax(1, MotorType.kBrushless);
+ * SparkMax motor = new SparkMax(1, MotorType.kBrushless);
  * RelativeEncoder encoder = motor.getEncoder();
  * elevatorHardware = new ElevatorSubsystem.Hardware(motor, encoder);
  * ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(elevatorHardware);
@@ -76,7 +79,7 @@ import frc.robot.RobotPreferences;
  *   - {@code loadPreferences()}: Loads the preferences for tuning the controller.
  *   - {@code close()}: Closes any objects that support it.
  *   - Fields:
- *   - {@code private final CANSparkMax motor}: The motor used to control the elevator.
+ *   - {@code private final SparkMax motor}: The motor used to control the elevator.
  *   - {@code private final RelativeEncoder encoder}: The encoder used to measure the elevator's
  *     position.
  *   - {@code private ProfiledPIDController elevatorController}: The PID controller used to
@@ -94,17 +97,18 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
   /** Hardware components for the elevator subsystem. */
   public static class Hardware {
-    CANSparkMax motor;
+    SparkMax motor;
     RelativeEncoder encoder;
 
-    public Hardware(CANSparkMax motor, RelativeEncoder encoder) {
+    public Hardware(SparkMax motor, RelativeEncoder encoder) {
       this.motor = motor;
       this.encoder = encoder;
     }
   }
 
-  private final CANSparkMax motor;
+  private final SparkMax motor;
   private final RelativeEncoder encoder;
+  private final SparkMaxConfig motorConfig = new SparkMaxConfig();
 
   private ProfiledPIDController elevatorController =
       new ProfiledPIDController(
@@ -140,7 +144,6 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
 
     RobotPreferences.initPreferencesArray(ElevatorConstants.getElevatorPreferences());
 
-    initEncoder();
     initMotor();
 
     // Set tolerances that will be used to determine when the elevator is at the goal position.
@@ -151,21 +154,25 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   private void initMotor() {
-    motor.restoreFactoryDefaults();
-    // Maybe we should print the faults if non-zero before clearing?
-    motor.clearFaults();
-    // Configure the motor to use EMF braking when idle and set voltage to 0.
-    motor.setIdleMode(IdleMode.kBrake);
-    DataLogManager.log("Elevator motor firmware version:" + motor.getFirmwareString());
-  }
+    motorConfig.smartCurrentLimit(ElevatorConstants.CURRENT_LIMIT);
 
-  private void initEncoder() {
-    // Setup the encoder scale factors and reset encoder to 0. Since this is a relation encoder,
-    // elevator position will only be correct if the elevator is in the starting rest position when
+    // Setup the encoder scale factors. Since this is a relative encoder,
+    // elevator position will only be correct if it is in the down position when
     // the subsystem is constructed.
-    encoder.setPositionConversionFactor(ElevatorConstants.ELEVATOR_METERS_PER_ENCODER_ROTATION);
-    encoder.setVelocityConversionFactor(ElevatorConstants.RPM_TO_METERS_PER_SEC);
+    motorConfig.encoder.positionConversionFactor(
+        ElevatorConstants.ELEVATOR_METERS_PER_ENCODER_ROTATION);
+    motorConfig.encoder.velocityConversionFactor(ElevatorConstants.RPM_TO_METERS_PER_SEC);
+
+    motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     encoder.setPosition(0);
+
+    motor.clearFaults();
+    // Configure the motor to use EMF braking when idle.
+    setBrakeMode(true);
+
+    motor.clearFaults();
+    DataLogManager.log("Elevator motor firmware version:" + motor.getFirmwareString());
   }
 
   /**
@@ -174,7 +181,7 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Hardware object containing all necessary devices for this subsystem
    */
   public static Hardware initializeHardware() {
-    CANSparkMax motor = new CANSparkMax(ElevatorConstants.MOTOR_PORT, MotorType.kBrushless);
+    SparkMax motor = new SparkMax(ElevatorConstants.MOTOR_PORT, MotorType.kBrushless);
     RelativeEncoder encoder = motor.getEncoder();
 
     return new Hardware(motor, encoder);
@@ -323,6 +330,29 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   /** Returns the Motor Commanded Voltage. */
   public double getVoltageCommand() {
     return voltageCommand;
+  }
+
+  /** Returns the motor for simulation. */
+  public SparkMax getMotor() {
+    return motor;
+  }
+
+  /**
+   * Set the motor idle mode to brake or coast.
+   *
+   * @param enableBrake Enable motor braking when idle
+   */
+  public void setBrakeMode(boolean enableBrake) {
+    SparkMaxConfig brakeConfig = new SparkMaxConfig();
+    if (enableBrake) {
+      DataLogManager.log("Climber motors set to brake mode");
+      brakeConfig.idleMode(IdleMode.kBrake);
+    } else {
+      DataLogManager.log("Climber motors set to coast mode");
+      brakeConfig.idleMode(IdleMode.kCoast);
+    }
+    motor.configure(
+        brakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   /**

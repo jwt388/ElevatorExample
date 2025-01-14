@@ -35,8 +35,7 @@ public final class Constants {
 
     // These are fake gains; in actuality these must be determined individually for each robot
     public static final int MOTOR_PORT = 8;
-    public static final int ENCODER_A_CHANNEL = 0;
-    public static final int ENCODER_B_CHANNEL = 1;
+    public static final int CURRENT_LIMIT = 40;
 
     // Constants tunable through preferences
     public static final PreferenceKeyValue ELEVATOR_KP = new PreferenceKeyValue("ElevatorKP", 15.0);
