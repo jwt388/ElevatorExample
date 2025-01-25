@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
@@ -162,6 +163,18 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
         ElevatorConstants.POSITION_TOLERANCE_METERS, ElevatorConstants.VELOCITY_TOLERANCE_METERS);
 
     disable();
+
+    // Add buttons to toggle brake mode
+    SmartDashboard.putData(
+        "Elevator Brake Mode",
+        new InstantCommand(() -> setBrakeMode(true))
+            .ignoringDisable(true)
+            .withName("Elevator Brake"));
+    SmartDashboard.putData(
+        "Elevator Coast Mode",
+        new InstantCommand(() -> setBrakeMode(false))
+            .ignoringDisable(true)
+            .withName("Elevator Coast"));
   }
 
   private void initMotor() {
@@ -356,10 +369,10 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   public void setBrakeMode(boolean enableBrake) {
     SparkMaxConfig brakeConfig = new SparkMaxConfig();
     if (enableBrake) {
-      DataLogManager.log("Climber motors set to brake mode");
+      DataLogManager.log("Elevator motor set to brake mode");
       brakeConfig.idleMode(IdleMode.kBrake);
     } else {
-      DataLogManager.log("Climber motors set to coast mode");
+      DataLogManager.log("Elevator motor set to coast mode");
       brakeConfig.idleMode(IdleMode.kCoast);
     }
     motor.configure(
@@ -367,19 +380,19 @@ public class ElevatorSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Load Preferences for values that can be tuned at runtime. This should only be called when the
-   * controller is disabled - for example from enable().
+   * Load values that can be tuned at runtime. This should only be called when the controller is
+   * disabled - for example from enable().
    */
   private void loadTunableNumbers() {
 
-    // Read Preferences for PID controller
+    // Read values for PID controller
     elevatorController.setP(kp.get());
 
-    // Read Preferences for Trapezoid Profile and update
+    // Read values for Trapezoid Profile and update
     elevatorController.setConstraints(
         new TrapezoidProfile.Constraints(maxVelocity.get(), maxAcceleration.get()));
 
-    // Read Preferences for Feedforward and create a new instance
+    // Read values for Feedforward and create a new instance
     feedforward = new ElevatorFeedforward(ks.get(), kg.get(), kv.get(), 0);
   }
 

@@ -15,10 +15,6 @@ public final class Constants {
   // Set to true to log Joystick data. To false otherwise.
   public static final boolean LOG_JOYSTICK_DATA = true;
 
-  // Set to true to send telemetry data to Live Window. To false
-  // to disable it.
-  public static final boolean LW_TELEMETRY_ENABLE = false;
-
   public static final boolean LOOP_TIMING_LOG = false;
 
   // Set to true to enable using Tunable Numbers
@@ -38,7 +34,7 @@ public final class Constants {
     public static final int MOTOR_PORT = 8;
     public static final int CURRENT_LIMIT = 40;
 
-    // Constants tunable through preferences
+    // Constants tunable through TunableNumbers
     public static final double ELEVATOR_KP = 15.0;
     public static final double ELEVATOR_KS = 0.1;
     public static final double ELEVATOR_KG = 0.65;

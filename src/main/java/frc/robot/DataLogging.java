@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.EventImportance;
@@ -19,7 +18,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.ElevatorSubsystem;
 import java.util.Map;
 
 /** The DataLogging class contains all the logic for using telemetry. */
@@ -42,14 +40,6 @@ public class DataLogging {
 
     // Record both DS control and joystick data. To
     DriverStation.startDataLog(DataLogManager.getLog(), Constants.LOG_JOYSTICK_DATA);
-
-    if (Constants.LW_TELEMETRY_ENABLE) {
-      // In 2022 code this is the default, in 2023 the default changes
-      // and they add the enable call.
-      // LiveWindow.enableAllTelemetry()
-    } else {
-      LiveWindow.disableAllTelemetry();
-    }
 
     ShuffleboardTab sbRobotTab = Shuffleboard.getTab("Robot");
     pdpWidget = sbRobotTab.getLayout("PDP", BuiltInLayouts.kGrid).withSize(3, 3);
@@ -148,11 +138,9 @@ public class DataLogging {
   public void dataLogRobotContainerInit(RobotContainer robotContainer) {
 
     PowerDistribution pdp = robotContainer.getPdp();
-    ElevatorSubsystem elevator = robotContainer.getElevatorSubsystem();
 
     // Add widgets to the Commands tab
     sbCommandsTab.add(CommandScheduler.getInstance()).withSize(3, 2);
-    sbCommandsTab.add(elevator).withSize(3, 1);
 
     // Add widgets to the Driver tab
 
